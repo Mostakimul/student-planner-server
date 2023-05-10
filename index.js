@@ -79,9 +79,7 @@ async function run() {
     // Delete a class
     app.delete('/class/:id', async (req, res) => {
       const classId = req.params.id;
-      console.log(classId);
       const query = { _id: new ObjectId(classId) };
-      console.log(query);
       const result = await classCollection.deleteOne(query);
       res.json(result);
     });
