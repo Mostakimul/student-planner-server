@@ -76,6 +76,34 @@ async function run() {
       res.json(result);
     });
 
+    // get single class
+    app.get('/class/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await classCollection.findOne(query);
+      res.send(result);
+    });
+
+    // update class
+    app.patch('/class/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedClass = req.body;
+
+      const myClass = {
+        $set: {
+          subject: updatedClass.subject,
+          professor: updatedClass.professor,
+          schedule: updatedClass.schedule,
+          room: updatedClass.room,
+        },
+      };
+
+      const result = await classCollection.updateOne(filter, myClass, options);
+      res.send(result);
+    });
+
     // Delete a class
     app.delete('/class/:id', async (req, res) => {
       const classId = req.params.id;
