@@ -47,6 +47,7 @@ async function run() {
     const classCollection = database.collection('classes');
     const examCollection = database.collection('exams');
     const assignmentCollection = database.collection('assignments');
+    const presentationCollection = database.collection('presentations');
 
     // login to mongo
     app.post('/login', async (req, res) => {
@@ -224,6 +225,64 @@ async function run() {
       const assignmentId = req.params.id;
       const query = { _id: new ObjectId(assignmentId) };
       const result = await assignmentCollection.deleteOne(query);
+      res.json(result);
+    });
+
+    /**
+     * Presentation section
+     */
+    // add presentation to mongo db
+    app.post('/presentation', async (req, res) => {
+      const data = req.body;
+      const result = await presentationCollection.insertOne(data);
+      res.json(result);
+    });
+
+    // get presentations by email
+    app.get('/presentations/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await presentationCollection.find(query).toArray();
+      res.json(result);
+    });
+
+    // get presentation
+    app.get('/presentation/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await presentationCollection.findOne(query);
+      res.send(result);
+    });
+
+    // update presentation
+    app.patch('/presentation/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedPresentation = req.body;
+
+      const myPresentation = {
+        $set: {
+          subject: updatedPresentation.subject,
+          title: updatedPresentation.title,
+          deadline: updatedPresentation.deadline,
+          method: updatedPresentation.method,
+        },
+      };
+
+      const result = await presentationCollection.updateOne(
+        filter,
+        myPresentation,
+        options,
+      );
+      res.send(result);
+    });
+
+    // Delete a presentation
+    app.delete('/presentation/:id', async (req, res) => {
+      const presentationId = req.params.id;
+      const query = { _id: new ObjectId(presentationId) };
+      const result = await presentationCollection.deleteOne(query);
       res.json(result);
     });
   } finally {
