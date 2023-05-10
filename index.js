@@ -43,22 +43,36 @@ async function run() {
     await client.connect();
     const database = client.db('studentPlanner');
     const usersCollection = database.collection('users');
+    const classCollection = database.collection('classes');
 
     // login to mongo
     app.post('/login', async (req, res) => {
       const user = req.body;
-      console.log('Backend user', user);
       const query = { email: user.email };
       const result = await usersCollection.findOne(query);
-      console.log(result);
       res.json(result);
     });
 
     // Save user to mongo
     app.post('/register', async (req, res) => {
       const user = req.body;
-      console.log(user);
       const result = await usersCollection.insertOne(user);
+      res.json(result);
+    });
+
+    // add class to mongo db
+    app.post('/addClass', async (req, res) => {
+      const myClass = req.body;
+      const result = await classCollection.insertOne(myClass);
+      res.json(result);
+    });
+
+    // get class by email
+    app.get('/classes/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await classCollection.find(query).toArray();
+      console.log(result);
       res.json(result);
     });
   } finally {
