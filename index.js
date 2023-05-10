@@ -46,6 +46,7 @@ async function run() {
     const usersCollection = database.collection('users');
     const classCollection = database.collection('classes');
     const examCollection = database.collection('exams');
+    const assignmentCollection = database.collection('assignments');
 
     // login to mongo
     app.post('/login', async (req, res) => {
@@ -165,6 +166,64 @@ async function run() {
       const examId = req.params.id;
       const query = { _id: new ObjectId(examId) };
       const result = await examCollection.deleteOne(query);
+      res.json(result);
+    });
+
+    /**
+     * Assignment section
+     */
+    // add myAssignment to mongo db
+    app.post('/assignment', async (req, res) => {
+      const data = req.body;
+      const result = await assignmentCollection.insertOne(data);
+      res.json(result);
+    });
+
+    // get myAssignment by email
+    app.get('/assignments/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await assignmentCollection.find(query).toArray();
+      res.json(result);
+    });
+
+    // get myAssignment
+    app.get('/assignment/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignmentCollection.findOne(query);
+      res.send(result);
+    });
+
+    // update myAssignment
+    app.patch('/assignment/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedAssignment = req.body;
+
+      const myAssignment = {
+        $set: {
+          subject: updatedAssignment.subject,
+          title: updatedAssignment.title,
+          deadline: updatedAssignment.deadline,
+          type: updatedAssignment.type,
+        },
+      };
+
+      const result = await assignmentCollection.updateOne(
+        filter,
+        myAssignment,
+        options,
+      );
+      res.send(result);
+    });
+
+    // Delete a assignment
+    app.delete('/assignment/:id', async (req, res) => {
+      const assignmentId = req.params.id;
+      const query = { _id: new ObjectId(assignmentId) };
+      const result = await assignmentCollection.deleteOne(query);
       res.json(result);
     });
   } finally {
