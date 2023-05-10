@@ -45,6 +45,7 @@ async function run() {
     const database = client.db('studentPlanner');
     const usersCollection = database.collection('users');
     const classCollection = database.collection('classes');
+    const examCollection = database.collection('exams');
 
     // login to mongo
     app.post('/login', async (req, res) => {
@@ -109,6 +110,61 @@ async function run() {
       const classId = req.params.id;
       const query = { _id: new ObjectId(classId) };
       const result = await classCollection.deleteOne(query);
+      res.json(result);
+    });
+
+    /**
+     * Exam section
+     */
+    // add exam to mongo db
+    app.post('/exam', async (req, res) => {
+      const data = req.body;
+      const result = await examCollection.insertOne(data);
+      res.json(result);
+    });
+
+    // get exams by email
+    app.get('/exams/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await examCollection.find(query).toArray();
+      res.json(result);
+    });
+
+    // get single exam
+    app.get('/exam/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await examCollection.findOne(query);
+      res.send(result);
+    });
+
+    // update exam
+    app.patch('/exam/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedExam = req.body;
+
+      const myExam = {
+        $set: {
+          subject: updatedExam.subject,
+          type: updatedExam.type,
+          date: updatedExam.date,
+          room: updatedExam.room,
+          method: updatedExam.method,
+        },
+      };
+
+      const result = await examCollection.updateOne(filter, myExam, options);
+      res.send(result);
+    });
+
+    // Delete a exam
+    app.delete('/exam/:id', async (req, res) => {
+      const examId = req.params.id;
+      const query = { _id: new ObjectId(examId) };
+      const result = await examCollection.deleteOne(query);
       res.json(result);
     });
   } finally {
