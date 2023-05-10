@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+// const ObjectId = require('mongodb').ObjectId;
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 require('dotenv').config();
 
@@ -72,7 +73,16 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const result = await classCollection.find(query).toArray();
-      console.log(result);
+      res.json(result);
+    });
+
+    // Delete a class
+    app.delete('/class/:id', async (req, res) => {
+      const classId = req.params.id;
+      console.log(classId);
+      const query = { _id: new ObjectId(classId) };
+      console.log(query);
+      const result = await classCollection.deleteOne(query);
       res.json(result);
     });
   } finally {
